@@ -1,0 +1,116 @@
+<!--
+Exercise 5: Add a button & input box for saving a meme.
+Exercise 6: Let's set up a database to save memes.
+Exercise 7: Save the memes in the database.
+Exercise 8: Show the saved memes.
+
+What more you can do?
+- Use a tag to link the meme URL to the image itself.
+- Style the app in your way.
+- Add formatting options to meme text.
+  -->
+
+<html>
+
+<head>
+  <title>Meme Generator</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Bebas+Neue&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+  <h1>Welcome to the world of memes!</h1>
+
+  <div class="container">
+    <div class="creator">
+      <select id="meme-chooser"></select>
+      <img id="selected-image">
+      <div class="boxes"></div>
+      <button id="generateBtn">Generate</button>
+    </div>
+
+    <div class="final-meme">
+    </div>
+  </div>
+
+  <script>
+    var username = "codewizardshq";
+    var password = "wizardcode";
+    var imgFlip = "https://imgflip-api.herokuapp.com/get_memes";
+    var imgFlip_post = "https://api.imgflip.com/caption_image";
+
+    $.ajax({
+      url: imgFlip
+    }).then(showOptions);
+
+    var memesArray, meme;
+
+    function showOptions(response) {
+      console.log(response);
+      memesArray = response.data.memes;
+      for (c in memesArray) {
+        var optionTag = `<option value="${c}">
+                        ${memesArray[c].name}</option>`;
+        $('#meme-chooser').append(optionTag);
+      }
+      $('#meme-chooser').change(changeMeme);
+      changeMeme();
+    }
+
+    function changeMeme() {
+      $(".boxes").html(" ");
+      var selected = $('#meme-chooser').val();
+      meme = memesArray[selected];
+      $('#selected-image').attr('src', meme.url);
+      var boxes = meme.box_count;
+      for (var c = 0; c < boxes; c++) {
+        $(".boxes").append("<input type='text' placeholder='Enter meme text'>");
+      }
+    }
+
+
+    function generate() {
+      var allInputs = $('.boxes > input');
+      var allTexts = [];
+      for (input of allInputs) {
+        var textObj = {
+          'text': input.value,
+          'color' : '#000000',
+          'outline_color': '#00ff00',
+        }
+        allTexts.push(textObj);
+      }
+      var inputData = {
+        template_id: meme.id,
+        username: username,
+        password: password,
+        boxes: allTexts,
+      };
+
+      $.ajax({
+        url: imgFlip_post,
+        type: 'POST',
+        data: inputData
+      }).then(showMeme, errorMeme)
+    }
+    $('#generateBtn').click(generate);
+
+    function showMeme(response) {
+      console.log(response);
+      var url = response.data.url;
+      var meme = `<img src=${url}><p>${url}</p>`;
+      $('.final-meme').html(meme);
+    }
+
+    function errorMeme() {
+      var meme = `<img src="https://i.imgflip.com/3i9gvs.jpg"><p>Unable to create a meme</p>`;
+      $('.final-meme').html(meme);
+    }
+
+
+  </script>
+</body>
+
+</html>
