@@ -1,0 +1,24 @@
+#!/usr/bin/python3
+
+import cgi
+formData = cgi.FieldStorage()
+
+import json
+
+def create_json(cursor):
+    headers = list(map(lambda x: x[0], cursor.description))
+    results = []
+
+    for row in cursor.fetchall():
+        rowData = {}
+        for i, col in enumerate(row):
+            rowData[headers[i]] = col
+        results.append(rowData)
+    return json.dumps(results)
+
+def get_input():
+    data = {}
+    if (formData):
+        for key in formData.keys():
+            data[key] = formData[key].value
+    return data
